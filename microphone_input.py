@@ -4,7 +4,7 @@ import whisper  # Correct import for OpenAI Whisper
 def transcribe():
     # Initialize recognizer and Whisper model
     r = sr.Recognizer()
-    model = whisper.load_model("base")
+    model = whisper.load_model("small")
 
     with sr.Microphone() as source:
         print("Say something...")

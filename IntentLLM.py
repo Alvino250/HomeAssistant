@@ -1,5 +1,5 @@
 # IntentLLM.py
-import os, json, torch
+import os, json, torch, re
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from states import states  # make sure states() does the HTTP call *inside* the function with timeout
 
@@ -24,8 +24,14 @@ model = AutoModelForCausalLM.from_pretrained(
     low_cpu_mem_usage=True,
     quantization_config=bnb_config
 )
-print("Model loaded ✅")
+print("Model loaded")
 
+def extractEntity_id(reply: str):
+    m = re.search(r'"entity_id"\s*:\s*"([^"]+)"', reply)
+    if m:
+        return m.group(1)
+    return None
+        
 # --- Function just runs inference ---
 def gemma(command: str) -> str:
     try:
@@ -52,7 +58,7 @@ def gemma(command: str) -> str:
 
     prompt = tokenizer.apply_chat_template(
         [{"role": "user", "content": user_msg}],
-        tokenize=False,
+        tokenize=False, # i.e data not sensitive
         add_generation_prompt=True,
     )
 
@@ -74,7 +80,8 @@ def gemma(command: str) -> str:
 
     print(reply)
     
-    data = json.loads(reply)
-    entity_id = data["devices"][0]["entity_id"]
-    print(entity_id)
-    return reply
+    eid = extractEntity_id(reply)
+    print(eid)
+    return eid
+
+

@@ -6,8 +6,8 @@ def main():
     #while(True):
         text = transcribe()  # Call the transcribe function to get the text from microphone input
         text = preProcess(text)  # Preprocess the transcribed text
-        eid = gemma(text)
-        sendCommand(eid)
+        eid, domain, action = gemma(text)
+        sendCommand(eid, domain, action)
         
     # Take action based on the predicted intent
     

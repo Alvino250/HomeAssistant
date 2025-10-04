@@ -1,6 +1,6 @@
-import whisper
+from faster_whisper import WhisperModel
 import speech_recognition as sr
-model = whisper.load_model("turbo")
+model = WhisperModel.load_model("turbo")
 r = sr.Recognizer()
 with sr.Microphone() as source:
     print("Say Something")

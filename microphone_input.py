@@ -1,10 +1,10 @@
 import speech_recognition as sr
-import whisper  # Correct import for OpenAI Whisper
+from faster_whisper import WhisperModel
 
 def transcribe():
     # Initialize recognizer and Whisper model
     r = sr.Recognizer()
-    model = whisper.load_model("small")
+    model = WhisperModel("small", device = "auto", compute_type="float16")
 
     with sr.Microphone() as source:
         print("Say something...")
@@ -15,7 +15,15 @@ def transcribe():
             f.write(audio.get_wav_data())
 
     # Transcribe using Whisper
-    result = model.transcribe("temp.wav", fp16=False, language="en")
-    print("Transcription:", result["text"])
-    return result["text"]
+    segments, info = model.transcribe("temp.wav", language="en")
+    fullText = ""
+    for x in segments:
+        fullText += x.text.strip() + " "
+    print("Transcription:", fullText)
+    return fullText
+
+
+
+
+
 

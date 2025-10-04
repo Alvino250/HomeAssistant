@@ -143,6 +143,19 @@ def gemma(command: str):
         f"Services: {servicesList}\n\n"
         "If relevant devices exist, respond exactly as:\n"
         '{ "status": "success", "devices": { ... } | [ ... ], "services": { "<domain>.<action>": {"entity_id": "<eid>"} } }\n'
+        "If Spotify or playing music or song or even AND ESPECIALLY IF the word play is mentioned, respond exactly as:\n"
+        '{\n'
+        '  "status": "success",\n'
+        '  "devices": [ { "entity_id": "media_player.spotify", "name": "Spotify" } ],\n'
+        '  "services": [ {\n'
+        '     "name": "play_media",\n'
+        '     "domain": "media_player",\n'
+        '     "entity_id": "media_player.spotify",\n'
+        '     "query": "<song, album, or playlist name from user command>",\n'
+        '     "kind": "track | album | playlist",\n'
+        '     "source": "<output device name if mentioned (e.g. Living Room TV)>"\n'
+        '  } ]\n'
+    '}\n\n'
         "Alternatively allowed (but please include entity_id if possible):\n"
         '{ "status":"success", "devices":[...], "services":[{"name":"turn_on","domain":"media_player","entity_id":"<eid>"}] }\n'
         "Otherwise respond:\n"
@@ -161,7 +174,7 @@ def gemma(command: str):
 
     out = model.generate(
         **inputs,
-        max_new_tokens=180,
+        max_new_tokens=512,
         do_sample=False,
         temperature=0.0,
         eos_token_id=tokenizer.eos_token_id,
@@ -194,7 +207,7 @@ def gemma(command: str):
     print("domain:", domain)
     print("entity_id:", eid)
 
-    return eid, domain, action
+    return eid, domain, action, parsed
 # ---------------------------
 # Quick manual test
 # ---------------------------

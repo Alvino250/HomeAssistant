@@ -4,7 +4,7 @@ from faster_whisper import WhisperModel
 def transcribe():
     # Initialize recognizer and Whisper model
     r = sr.Recognizer()
-    model = WhisperModel("small", device = "auto", compute_type="float16")
+    model = WhisperModel("turbo", device = "auto", compute_type="float16")
 
     with sr.Microphone() as source:
         print("Say something...")

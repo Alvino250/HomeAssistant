@@ -8,7 +8,7 @@ import subprocess
 # Remove Punctuation etc as it is irrelevant for intent classification
 def preProcess(text):
     text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
-    text = re.sub(r'\d+', '', text)      # Remove digits
+    #text = re.sub(r'\d+', '', text)      # Remove digits
     text = text.lower()                  # Convert to lowercase
     return text 
 

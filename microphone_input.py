@@ -1,12 +1,17 @@
 import speech_recognition as sr
 from faster_whisper import WhisperModel
 
+print("Loading Whisper Model (turbo)...")
+model = WhisperModel("turbo", device = "auto", compute_type="float16")
+print("Whisper Model has been successfully loaded")
 def transcribe():
     # Initialize recognizer and Whisper model
     r = sr.Recognizer()
-    model = WhisperModel("turbo", device = "auto", compute_type="float16")
-
-    with sr.Microphone() as source:
+    r.pause_threshold = 3
+    r.non_speaking_duration = 0.8
+    r.dynamic_energy_threshold = True
+    r.energy_threshold = 200
+    with sr.Microphone() as source: # with is being used to then close the microphone source after its use
         print("Say something...")
         audio = r.listen(source)
 

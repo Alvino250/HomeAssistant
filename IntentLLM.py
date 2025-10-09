@@ -1,7 +1,7 @@
-# IntentLLM.py
 import json
 import re
 import torch
+import threading
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
 from states import states
@@ -13,23 +13,37 @@ USE_GPU = torch.cuda.is_available()
 DEVICE = "cuda" if USE_GPU else "cpu"
 print(f"Loading {MODEL_ID} on {DEVICE} (4-bit)…")
 
-bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_use_double_quant=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.float16
-)
+tokenizer = None
+model = None
+_ready = threading.Event() # To show that model has been loaded
 
-tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_ID,
-    device_map="auto",
-    torch_dtype=torch.float16 if USE_GPU else torch.float32,
-    low_cpu_mem_usage=True,
-    quantization_config=bnb_config
-).eval()
-print("Model loaded.")
+def loadModelAsync():
+    global tokenizer, model # global keyword used to modify the variables outside of scope
+    try:
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.float16
+        )
+        tok = AutoTokenizer.from_pretrained(MODEL_ID)
+        mdl = AutoModelForCausalLM.from_pretrained(
+            MODEL_ID,
+            device_map="auto",
+            dtype=torch.float16 if USE_GPU else torch.float32,
+            low_cpu_mem_usage=True,
+            quantization_config=bnb_config
+        ).eval()
+        tokenizer, model = tok, mdl
+        
+        print("Model loaded and warmed up.")
+    finally:
+        _ready.set()
 
+
+            
+def ready() -> bool:
+    return _ready.is_set() and tokenizer is not None and model is not None
 # ---------------------------
 # Robust JSON extraction
 # ---------------------------
@@ -141,9 +155,9 @@ def gemma(command: str):
         f"User command: {command}\n"
         f"Devices: {devicesJSON}\n\n"
         f"Services: {servicesList}\n\n"
-        "If relevant devices exist, respond exactly as:\n"
+        "If relevant devices exist UNLESS the words spotify, music, song, play are mentioned respond exactly as:\n"
         '{ "status": "success", "devices": { ... } | [ ... ], "services": { "<domain>.<action>": {"entity_id": "<eid>"} } }\n'
-        "If Spotify or playing music or song or even AND ESPECIALLY IF the word play is mentioned, respond exactly as:\n"
+        "If Spotify or playing music or song or even if the word play is mentioned even if a relevant device is mentioned, respond exactly as:\n"
         '{\n'
         '  "status": "success",\n'
         '  "devices": [ { "entity_id": "media_player.spotify", "name": "Spotify" } ],\n'
@@ -190,7 +204,7 @@ def gemma(command: str):
     parsed = json.loads(json_str)
 
     if parsed.get("status") != "success":
-        return None, None, None
+        return None, None, None, None
 
     action, domain = _extract_action_domain(parsed)
     eid = _first_entity_id(parsed)

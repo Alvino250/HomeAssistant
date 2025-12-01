@@ -8,9 +8,9 @@ TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhMTU0N2YxNWM2NWQ0ZmEwYm
 
 SPOTIFY_ENTITY_ID = "media_player.spotify_alvin_grima"
 
-# 🔑 Your Spotify developer credentials (inline)
-CLIENT_ID = "0ca407636f0a463a9096e45930b5ace2"
-CLIENT_SECRET = "3a5e33ec865949f59cdcb3037405da03"
+
+CLIENT_ID = ""
+CLIENT_SECRET = ""
 
 def extractSpotify(parsed: dict) -> None:
     """Parsed is the LLM JSON dict. Extract and call HA to play."""

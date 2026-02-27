@@ -149,7 +149,7 @@ def gemma(command: str):
     except Exception as e:
         servicesList = {"error": f"services() failed: {e}"}
 
-    user_msg = (
+    user_msg = ( # Chatgpt was used to help refine prompt
         "You are an AI that controls a smart home. Map user commands to Home Assistant device settings.\n"
         "Return ONLY ONE JSON object. No markdown, no code fences, no extra text.\n\n"
         f"User command: {command}\n"

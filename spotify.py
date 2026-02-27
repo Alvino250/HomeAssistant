@@ -64,7 +64,7 @@ def extractSpotify(parsed: dict) -> None:
         "artist": "artist"
     }.get(kind, "music")
 
-    # 🎯 Resolve Spotify URI first (always)
+    # Resolve Spotify URI first (always)
     uri = search_spotify_uri(query, kind)
     if uri:
         query = uri
@@ -172,11 +172,11 @@ def get_source_list(entity_id: str) -> list[str]:
 
 
 def _ensure_uri(s: str) -> str | None:
-    """Return spotify: URI if string already is a Spotify link."""
+    # Return spotify: URI if string already is a Spotify link.
     s = (s or "").strip()
     if s.startswith("spotify:"):
         return s
-    m = re.match(r"https?://open\.spotify\.com/([a-z]+)/([A-Za-z0-9]+)", s)
+    m = re.match(r"https?://open\.spotify\.com/([a-z]+)/([A-Za-z0-9]+)", s) #Chatgpt was used to compute the REGEX
     if m:
         kind, sid = m.group(1), m.group(2)
         return f"spotify:{kind}:{sid}"
@@ -254,7 +254,7 @@ def play_media(entity_id: str, media_content_id: str, media_content_type: str, *
         "media_content_type": media_content_type
     }
 
-    # --- Preflight: ensure a real output device is selected ---
+    # ensure a real output device is selected 
     try:
         st = get_spotify_state(entity_id)
         attrs = st.get("attributes", {})
@@ -293,5 +293,4 @@ def play_media(entity_id: str, media_content_id: str, media_content_type: str, *
         except Exception as e:
             print("Retry path threw:", e)
 
-    # Bubble up error like your original code (keeps external behavior)
     r.raise_for_status()

@@ -27,6 +27,9 @@ def transcribe():
     print("Transcription:", fullText)
     return fullText
 
+    
+    
+
 
 
 

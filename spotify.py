@@ -6,13 +6,13 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import difflib
 
 BASE = "http://homeassistant.local:8123"
-TOKEN = ""
+TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhMTU0N2YxNWM2NWQ0ZmEwYmYyNmExN2YyY2UwNjAzNyIsImlhdCI6MTc1ODgyOTIxNCwiZXhwIjoyMDc0MTg5MjE0fQ.XSNgMgfpC8Ix9mwx0lJgeh-opLKbckPPDErRAynKYgM"
 
 SPOTIFY_ENTITY_ID = "media_player.spotify_alvin_grima"
 
 
-CLIENT_ID = ""
-CLIENT_SECRET = ""
+CLIENT_ID = "0ca407636f0a463a9096e45930b5ace2"
+CLIENT_SECRET = "3a5e33ec865949f59cdcb3037405da03"
 
 
 def extractSpotify(parsed: dict) -> None:
@@ -182,6 +182,38 @@ def _ensure_uri(s: str) -> str | None:
         return f"spotify:{kind}:{sid}"
     return None
 
+def standarized(s : str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[^\w\s]", "", (s or "").lower())).strip()
+
+def bestMatchTrack(items: list[dict], wantedTitle: str, wantedArist: str | None) -> dict | None: 
+    wtitle = standarized(wantedTitle)
+    wartist = standarized(wantedArist) if wantedArist else None 
+    
+    best = None
+    bestScore = -1.0
+    
+    for it in items:
+        name = it.get("name", "")
+        artists = [a.get("name", "") for a in it.get("artists", [])]
+        artists_join = " ".join(artists)
+        
+        nameScore = difflib.SequenceMatcher(None, standarized(name), wtitle).ratio()
+        
+        if wartist:
+            artistScore = difflib.SequenceMatcher(None,standarized(artists_join), wartist).ratio()
+            score = 0.75 * nameScore + 0.25 * artistScore
+        else:
+            score = nameScore
+            
+        if score > bestScore:
+            bestScore = score
+            best = it
+        
+    return best
+    
+    
+    
+
 
 def search_spotify_uri(query: str, kind: str = "track") -> str | None:
     uri = _ensure_uri(query)
@@ -196,24 +228,35 @@ def search_spotify_uri(query: str, kind: str = "track") -> str | None:
             client_secret=CLIENT_SECRET
         )
     )
+    
+    title = query
+    artist = None
 
     # Try to separate title and artist for better accuracy (for tracks/albums)
-    parts = re.split(r"\bby\b", query, flags=re.IGNORECASE)
+    parts = re.split(r"\bby\b", query, flags=re.IGNORECASE) # splits by 'by' (chatgpt generated regex)
     if len(parts) >= 2 and kind in {"track", "album"}:
         title, artist = parts[0].strip(), parts[1].strip()
-        if kind == "track":
-            q = f'track:"{title}" artist:"{artist}"'
-        else:
-            q = f'album:"{title}" artist:"{artist}"'
+        
+    if kind in {"track", "album"} and artist:
+        q = f'{kind}:"{title}" artist:"{artist}"'
+    elif kind in {"track", "album"}:
+        q = f'{kind}:"{title}"'
     else:
         q = query
+        
 
     # First try the requested kind
     try:
-        res = sp.search(q=q, type=kind, limit=1, market="MT")
+        res = sp.search(q=q, type=kind, limit=15, market="MT")
         items = res.get(f"{kind}s", {}).get("items", [])
         if items:
-            uri = items[0].get("uri")
+            if kind == "track":
+                best = bestMatchTrack(items,title,artist)
+                if best and best.get("uri"):
+                    return best["uri"]
+                    
+            uri = items[0].get("uri") # working on this
+            print(uri)
             if uri:
                 print(f"Found URI: {uri}")
                 return uri
@@ -230,9 +273,14 @@ def search_spotify_uri(query: str, kind: str = "track") -> str | None:
 
     for k in fallback_order:
         try:
-            res = sp.search(q=query, type=k, limit=1, market="MT")
+            res = sp.search(q=query, type=k, limit=5, market="MT")
             items = res.get(f"{k}s", {}).get("items", [])
             if items:
+                if k == "track":
+                    best = bestMatchTrack(items, title, artist)
+                    if best and best.get("uri"):
+                        return best["uri"]
+                    
                 uri = items[0].get("uri")
                 if uri:
                     print(f"Found {k} URI: {uri}")

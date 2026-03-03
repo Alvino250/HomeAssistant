@@ -2,7 +2,7 @@ import requests
 
 def states(timeout = 8):
     BASE = "http://homeassistant.local:8123"
-    TOKEN = ""
+    TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhMTU0N2YxNWM2NWQ0ZmEwYmYyNmExN2YyY2UwNjAzNyIsImlhdCI6MTc1ODgyOTIxNCwiZXhwIjoyMDc0MTg5MjE0fQ.XSNgMgfpC8Ix9mwx0lJgeh-opLKbckPPDErRAynKYgM"
 
     r = requests.get(f"{BASE}/api/states",
                  headers={"Authorization": f"Bearer {TOKEN}",

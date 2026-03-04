@@ -19,6 +19,10 @@ def transcribe():
         with open("temp.wav", "wb") as f:
             f.write(audio.get_wav_data())
 
+    english()
+    
+
+def english():
     # Transcribe using Whisper
     segments, info = model.transcribe("temp.wav", language="en")
     fullText = ""

@@ -4,7 +4,7 @@ def Word():
     wakeword = "HELLO JARVIS"
     pwakeword = " "
     while(wakeword != pwakeword):   
-        pwakeword = transcribe()
+        pwakeword, language = transcribe(language="en")
         pwakeword = pwakeword.upper()
         pwakeword = re.sub(r'[^\w\s]', '', pwakeword)
         pwakeword = " ".join(pwakeword.split())

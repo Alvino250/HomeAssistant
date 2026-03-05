@@ -151,6 +151,7 @@ def gemma(command: str):
 
     user_msg = ( # Chatgpt was used to help refine prompt
         "You are an AI that controls a smart home. Map user commands to Home Assistant device settings.\n"
+        "The user command may be in Maltese or English. Interpret it correctly."
         "Return ONLY ONE JSON object. No markdown, no code fences, no extra text.\n\n"
         f"User command: {command}\n"
         f"Devices: {devicesJSON}\n\n"

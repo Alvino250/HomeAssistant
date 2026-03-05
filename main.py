@@ -20,10 +20,10 @@ def main():
     
     while(True):
         Word()
-        text = transcribe()  # Call the transcribe function to get the text from microphone input
-        
+        text, lang = transcribe('mt')  # Call the transcribe function to get the text from microphone input
         text = preProcess(text)  # Preprocess the transcribed text
         eid, domain, action, parsed = None, None, None, None
+        print(lang)
         
         #text = "Play a song from my playlist Dark/Alt Pop"
         try:

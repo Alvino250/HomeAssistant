@@ -1,7 +1,7 @@
 from transformers import pipeline
 import speech_recognition as sr
 
-pipe = pipeline("automatic-speech-recognition", model="carlosdanielhernandezmena/whisper-largev2-maltese-8k-steps-64h")
+pipe = pipeline("automatic-speech-recognition", model="carlosdanielhernandezmena/whisper-largev2-maltese-8k-steps-64h", device=0)
 
 def transcribe():
     # Initialize recognizer and Whisper model

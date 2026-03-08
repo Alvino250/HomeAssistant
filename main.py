@@ -19,8 +19,12 @@ def main():
     print("Assistant is Ready")
     
     while(True):
-        Word()
-        text, lang = transcribe('mt')  # Call the transcribe function to get the text from microphone input
+        
+        language = Word()
+        if language == " ":
+            language = "en"
+        print("is this me", language)
+        text, lang = transcribe(language)  # Call the transcribe function to get the text from microphone input
         text = preProcess(text)  # Preprocess the transcribed text
         eid, domain, action, parsed = None, None, None, None
         print(lang)
@@ -31,6 +35,14 @@ def main():
         except:
             continue
         if "spotify" in eid or action == "play_media":
+            if parsed and isinstance(parsed.get("services"), dict): # line to get a list of dictionaries (chatgpt was used to assist)
+                newList = []
+                for k, v in parsed["services"].items():
+                    if isinstance(v,dict):
+                        newList.append({"service": k, **v}) # **v is used to unpack the dictionary 
+                
+                parsed["services"] = newList
+            
             print("Spotify program")
             extractSpotify(parsed)
         elif eid and domain and action:

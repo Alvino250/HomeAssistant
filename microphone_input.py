@@ -3,8 +3,8 @@ from faster_whisper import WhisperModel
 from transformers import pipeline
 
 print("Loading Whisper Model (turbo)...")
-model = WhisperModel("turbo", device = "auto", compute_type="float16")
-pipe = pipeline("automatic-speech-recognition", model="carlosdanielhernandezmena/whisper-largev2-maltese-8k-steps-64h")
+model = WhisperModel("large", device = "auto", compute_type="float16")
+#pipe = pipeline("automatic-speech-recognition", model="carlosdanielhernandezmena/whisper-largev2-maltese-8k-steps-64h", device_map = "auto", torch_dtype=torch.float16)
 print("Whisper Model has been successfully loaded")
 def transcribe(language : str | None = None) -> tuple[str,str]:
     # Initialize recognizer and Whisper model
@@ -23,17 +23,20 @@ def transcribe(language : str | None = None) -> tuple[str,str]:
 
     # Transcribe using Whisper
     if language == 'mt':
-        segments = pipe("temp.wav")
+        #segments = pipe("temp.wav")
+        print("maltese...?")
+        #print(segments)
+        #segments = segments["text"]
+        #segments = segments.strip()
+        #return segments, language
     else:
         segments, info = model.transcribe("temp.wav", language=language, vad_filter=True) # Voice Activation Detection Filter  --> Reduces Hallucinations
-    
-    fullText = ""
-    
-    for x in segments:
-        fullText += x.text.strip() + " "
-    print("Transcription:", fullText)
-    print("Language")
-    return fullText, language
+        fullText = ""
+        for x in segments:
+            fullText += x.text.strip() + " "
+        print("Transcription:", fullText)
+        print("Language")
+        return fullText, language
 
     
     

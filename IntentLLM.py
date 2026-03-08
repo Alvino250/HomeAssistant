@@ -111,21 +111,29 @@ def _first_entity_id(parsed: dict) -> str | None:
     return None
 
 def _extract_action_domain(parsed: dict) -> tuple[str | None, str | None]:
-    """Return (action, domain) from 'services' supporting three shapes."""
+    #Return (action, domain) from 'services' supporting multiple shapes.
     svcs = parsed.get("services")
 
     # Case A: {"services": {"media_player.turn_on": {"entity_id":"..."}}}
     if isinstance(svcs, dict) and svcs:
         k0 = next(iter(svcs))
+        v0 = svcs[k0]
+
+        # domain.action
         if "." in k0:
             dom, act = k0.split(".", 1)
             return act, dom
 
-        # Case C: {"services": {"media_player": {"turn_on": "media_player.turn_on", ...}}}
-        inner = svcs[k0]
-        if isinstance(inner, dict) and inner:
-            act0 = next(iter(inner))           # e.g., "turn_on"
-            return act0, k0                    # domain = outer key
+        # action -> payload   e.g. {"turn_on": {"entity_id":"switch.x"}}
+        if isinstance(v0, dict) and "entity_id" in v0:
+            eid = v0.get("entity_id")
+            dom = eid.split(".", 1)[0] if isinstance(eid, str) and "." in eid else None
+            return k0, dom
+
+        # domain -> {action: ...}   e.g. {"media_player": {"turn_on": "media_player.turn_on"}}
+        if isinstance(v0, dict) and v0:
+            act0 = next(iter(v0))
+            return act0, k0
 
     # Case B: {"services": [{"name":"turn_on","domain":"media_player", ...}]}
     if isinstance(svcs, list) and svcs:
